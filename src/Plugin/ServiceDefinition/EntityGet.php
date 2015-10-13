@@ -10,6 +10,7 @@ namespace Drupal\services\Plugin\ServiceDefinition;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\services\ServiceDefinitionBase;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -32,6 +33,10 @@ class EntityGet extends ServiceDefinitionBase {
     /** @var $entity \Drupal\Core\Entity\EntityInterface */
     $entity = $this->getContextValue('entity');
     return $entity->toArray();
+  }
+
+  public function processRoute(Route $route) {
+    $route->addRequirements(['_permission' => 'access content']);
   }
 
 }
