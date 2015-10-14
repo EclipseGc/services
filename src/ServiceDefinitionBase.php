@@ -7,8 +7,10 @@
 namespace Drupal\services;
 
 
+use Drupal\Component\Plugin\Context\ContextInterface as ComponentContextInterface;
 use Drupal\Core\Plugin\ContextAwarePluginBase;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Routing\Route;
 
 abstract class ServiceDefinitionBase extends ContextAwarePluginBase implements ServiceDefinitionInterface {
@@ -66,6 +68,20 @@ abstract class ServiceDefinitionBase extends ContextAwarePluginBase implements S
    * {@inheritdoc}
    */
   public function processResponse(Response $response) {}
+
+  /**
+   * Core plugins do not validate contexts when they are set, but we do.
+   *
+   * @todo get the other context setter methods covered with validations.
+   */
+  public function setContext($name, ComponentContextInterface $context) {
+    $violations = $context->validate();
+    if ($violations->count()) {
+      $message = $violations->get(0);
+      throw new HttpException(403, (string) $message->getMessage());
+    }
+    parent::setContext($name, $context);
+  }
 
 
 }

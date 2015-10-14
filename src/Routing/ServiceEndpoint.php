@@ -36,10 +36,22 @@ class ServiceEndpoint {
          * @var $context_definition \Drupal\Core\Plugin\Context\ContextDefinition
          */
         if (!empty($plugin_definition['context'])) {
+          // Build an array of parameter to pass to the Route definitions.
           foreach ($plugin_definition['context'] as $context_id => $context_definition) {
-            // Build an array of parameter to pass to the Route definitions.
+            // Entity contexts can have constraints on the data definition
+            // which can increase the data type's string with additional ':'
+            // and string data. We need to reduce this to simply
+            // entity:%entity_type in order to have it properly upcast.
+            $data_type = $context_definition->getDataType();
+            $type_array = explode(':', $data_type);
+            if (count($type_array) > 2 && $type_array[0] == 'entity') {
+              while (count($type_array) > 2) {
+                array_pop($type_array);
+              }
+              $data_type = implode(':', $type_array);
+            }
             $parameters[$context_id] = [
-              'type' => $context_definition->getDataType(),
+              'type' => $data_type,
             ];
           }
         }
